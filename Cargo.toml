@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies]
 openapi = { git = "https://github.com/softprops/openapi" }
-indoc = "0.3"
+indoc = { version = "0.3", features = ["unstable"] }
