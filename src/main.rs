@@ -41,66 +41,74 @@ impl DisplayAsciidoc for openapi::v2::Spec {
 impl DisplayAsciidoc for openapi::v3_0::Spec {
   fn to_asciidoc(&self) -> String {
 
-    let mut overview_adoc = "".to_owned();
+
+    let mut sections = vec![
+      format!("= {}\n", self.info.title),
+    ];
+
     if let Some(desc) = self.info.description.as_ref() {
-      overview_adoc = format!(indoc!("
-        [[_overview]]
-        == Overview
-        {}
-      "), desc);
+      sections.push(
+        format!(indoc!("
+          [[_overview]]
+          == Overview
+          [%hardbreaks]
+          {}
+        "), desc)
+      );
     }
 
-    let version_adoc = format!(indoc!("
-      === Version information
-      [%hardbreaks]
-      __Version__ : {version}
-    "), version = "1.0.0");
-
-    let contact_adoc = format!(indoc!("
-      === Contact information
-      [%hardbreaks]
-      __Contact__ : {name}
-      __Contact Email__ : {email}
-    "), name = "", email = "");
-
-    let license_adoc = format!(indoc!("
-      === License information
-      [%hardbreaks]
-      __License__ : {license}
-      __License URL__ : {url}
-      __Terms of service__ : {terms}
-    "), license = "", url = "", terms = "");
-    
-    let uri_adoc = format!(indoc!("
-      == URI scheme
-      [%hardbreaks]
-      __Host__ : {host}
-      __BasePath__ : {base_path}
-      __Schemes__ : {schemes}
-    "), host = "", base_path = "", schemes = "");
-    
-
-    return format!(
-      indoc!("
-        = {title}
-
-        {overview}
-
-        {version}
-
-        {contact}
-
-        {license}
-
-        {uri}
-      "),
-      title = self.info.title,
-      overview = overview_adoc,
-      version = version_adoc,
-      contact = contact_adoc,
-      license = license_adoc,
-      uri = uri_adoc
+    sections.push(
+      format!(indoc!("
+        === Version information
+        [%hardbreaks]
+        __Version__ : {}
+      "
+      ), self.info.version)
     );
+    
+    if let Some(contact) = self.info.contact.as_ref() {
+      // let mut contact_url = "".to_owned();
+      // if let Some(url) = &contact.url {
+      //   println!("{:#?}", url.0);
+      // }
+      sections.push(
+        format!(
+          indoc!("
+            === Contact information
+            [%hardbreaks]
+            __Contact__ : {name}
+            __Contact Email__ : {email}
+            __URL__ : {url}
+          "),
+          name = contact.name.as_ref().unwrap_or(&"".to_owned()),
+          email = contact.email.as_ref().unwrap_or(&"".to_owned()),
+          // TODO: weirdness with url wrapping in `openapi`
+          url = "".to_owned()
+        )
+      );
+    }
+
+    sections.push(
+      format!(indoc!("
+        === License information
+        [%hardbreaks]
+        __License__ : {license}
+        __License URL__ : {url}
+        __Terms of service__ : {terms}
+      "), license = "", url = "", terms = "")
+    );
+    
+    sections.push(
+      format!(indoc!("
+        === URI scheme
+        [%hardbreaks]
+        __Host__ : {host}
+        __BasePath__ : {base_path}
+        __Schemes__ : {schemes}
+      "), host = "", base_path = "", schemes = "")
+    );
+
+    sections.join("\n\n")
   }
 }
 
@@ -116,7 +124,7 @@ impl DisplayAsciidoc for openapi::v3_0::Info {
 fn main() -> std::result::Result<(), MyErr> {
   // let spec = openapi::from_path("expanded.openapi.yml");
   // println!("thing: {}", spec);
-  let openapi = openapi::from_path("test/simple.openapi.yml")?;
+  let openapi = openapi::from_path("test/expanded.openapi.yml")?;
   // println!("spec: {:#?}", spec);
   match openapi {
     openapi::OpenApi::V2(spec) => println!("{}", spec.to_asciidoc()),
