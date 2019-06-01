@@ -1,0 +1,229 @@
+= Swagger Petstore
+
+
+[[_overview]]
+== Overview
+A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0 specification
+
+
+=== Version information
+[%hardbreaks]
+__Version__ : 1.0.0
+
+
+=== Contact information
+[%hardbreaks]
+__Contact__ : Swagger API Team
+
+
+=== License information
+[%hardbreaks]
+__License__ : MIT
+__Terms of service__ : http://swagger.io/terms/
+
+
+=== URI scheme
+[%hardbreaks]
+__Host__ : petstore.swagger.io
+__BasePath__ : /api
+__Schemes__ : HTTP
+
+
+=== Consumes
+
+* `application/json`
+
+
+=== Produces
+
+* `application/json`
+
+
+
+
+[[_paths]]
+== Paths
+
+[[_addpet]]
+=== POST /pets
+
+==== Description
+Creates a new pet in the store. Duplicates are allowed
+
+
+==== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Body**|**pet** +
+__required__|Pet to add to the store|<<_newpet,NewPet>>
+|===
+
+
+==== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|pet response|<<_pet,Pet>>
+|**default**|unexpected error|<<_errormodel,ErrorModel>>
+|===
+
+
+==== Produces
+
+* `application/json`
+
+
+[[_findpets]]
+=== GET /pets
+
+==== Description
+Returns all pets from the system that the user has access to
+
+
+==== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Query**|**limit** +
+__optional__|maximum number of results to return|integer (int32)
+|**Query**|**tags** +
+__optional__|tags to filter by|< string > array(csv)
+|===
+
+
+==== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|pet response|< <<_pet,Pet>> > array
+|**default**|unexpected error|<<_errormodel,ErrorModel>>
+|===
+
+
+==== Produces
+
+* `application/json`
+* `application/xml`
+* `text/xml`
+* `text/html`
+
+
+[[_findpetbyid]]
+=== GET /pets/{id}
+
+==== Description
+Returns a user based on a single ID, if the user does not have access to the pet
+
+
+==== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**id** +
+__required__|ID of pet to fetch|integer (int64)
+|===
+
+
+==== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|pet response|<<_pet,Pet>>
+|**default**|unexpected error|<<_errormodel,ErrorModel>>
+|===
+
+
+==== Produces
+
+* `application/json`
+* `application/xml`
+* `text/xml`
+* `text/html`
+
+
+[[_deletepet]]
+=== DELETE /pets/{id}
+
+==== Description
+deletes a single pet based on the ID supplied
+
+
+==== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Path**|**id** +
+__required__|ID of pet to delete|integer (int64)
+|===
+
+
+==== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**204**|pet deleted|No Content
+|**default**|unexpected error|<<_errormodel,ErrorModel>>
+|===
+
+
+
+
+[[_definitions]]
+== Definitions
+
+[[_errormodel]]
+=== ErrorModel
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**code** +
+__required__|integer (int32)
+|**message** +
+__required__|string
+|===
+
+
+[[_newpet]]
+=== NewPet
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**name** +
+__required__|string
+|**tag** +
+__optional__|string
+|===
+
+
+[[_pet]]
+=== Pet
+[%hardbreaks]
+__Polymorphism__ : Composition
+
+
+[options="header", cols=".^3a,.^4a"]
+|===
+|Name|Schema
+|**id** +
+__required__|integer (int64)
+|**name** +
+__required__|string
+|**tag** +
+__optional__|string
+|===
+
+
+
+
+

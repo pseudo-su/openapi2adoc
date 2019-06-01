@@ -1,0 +1,9 @@
+[package]
+name = "openapi2adoc"
+version = "0.1.0"
+authors = ["John Stableford <john.stableford@latitudefinancial.com>"]
+edition = "2018"
+
+[dependencies]
+openapi = { git = "https://github.com/softprops/openapi" }
+indoc = "0.3"
