@@ -1,6 +1,8 @@
 #![feature(proc_macro_hygiene)]
 
 use indoc::indoc;
+use std::collections::BTreeMap;
+use http::Method;
 
 #[derive(Debug)]
 enum MyErr {
@@ -36,7 +38,102 @@ impl DisplayAsciidoc for openapi::v2::Spec {
 
 /*
 
+[[_addpet]]
+=== POST /pets
+
+==== Description
+Creates a new pet in the store. Duplicates are allowed
+
+
+==== Parameters
+
+[options="header", cols=".^2a,.^3a,.^9a,.^4a"]
+|===
+|Type|Name|Description|Schema
+|**Body**|**pet** +
+__required__|Pet to add to the store|<<_newpet,NewPet>>
+|===
+
+
+==== Responses
+
+[options="header", cols=".^2a,.^14a,.^4a"]
+|===
+|HTTP Code|Description|Schema
+|**200**|pet response|<<_pet,Pet>>
+|**default**|unexpected error|<<_errormodel,ErrorModel>>
+|===
+
+
+==== Produces
+
+* `application/json`
+
 */
+
+fn build_path(path: String, method: Method, operation: &openapi::v3_0::Operation) -> String {
+  // println!("{}: \"{:#?}\"", path, operation);
+  let mut head_section: Vec<String> = vec![];
+  if let Some(operation_id) = operation.operation_id.as_ref() {
+    head_section.push(format!("[[_{}]]", operation_id));
+  }
+  head_section.push(
+    format!(
+      "=== {method} {path}",
+      method = method.as_str(),
+      path = path
+    )
+  );
+
+  let heading = head_section.join("\n");
+
+  heading
+}
+
+fn build_paths(paths: BTreeMap<String, openapi::v3_0::PathItem>) -> String {
+  let mut paths_adoc: Vec<String> = vec![
+    indoc!("
+      [[_paths]]
+      == Paths
+    ").to_string()
+  ];
+
+  for (path, item) in &paths {
+    if let Some(operation) = item.get.as_ref() {
+      paths_adoc.push(build_path(path.to_string(), Method::GET, operation))
+    }
+
+    // if let Some(&operation) = item.put.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::PUT, operation))
+    // }
+
+    // if let Some(&operation) = item.post.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::POST, operation))
+    // }
+
+    // if let Some(&operation) = item.delete.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::DELETE, operation))
+    // }
+
+    // if let Some(&operation) = item.options.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::OPTIONS, operation))
+    // }
+
+    // if let Some(&operation) = item.head.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::HEAD, operation))
+    // }
+
+    // if let Some(&operation) = item.patch.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::PATCH, operation))
+    // }
+
+    // if let Some(&operation) = item.trace.as_ref() {
+    //   paths_adoc.push(build_path(path.to_string(), Method::TRACE, operation))
+    // }
+  }
+
+  paths_adoc.join("\n\n")
+}
 
 impl DisplayAsciidoc for openapi::v3_0::Spec {
   fn to_asciidoc(&self) -> String {
@@ -107,6 +204,10 @@ impl DisplayAsciidoc for openapi::v3_0::Spec {
         __Schemes__ : {schemes}
       "), host = "", base_path = "", schemes = "")
     );
+    
+    let paths = build_paths(self.paths.clone());
+
+    sections.push(paths);
 
     sections.join("\n\n")
   }
@@ -124,7 +225,7 @@ impl DisplayAsciidoc for openapi::v3_0::Info {
 fn main() -> std::result::Result<(), MyErr> {
   // let spec = openapi::from_path("expanded.openapi.yml");
   // println!("thing: {}", spec);
-  let openapi = openapi::from_path("test/expanded.openapi.yml")?;
+  let openapi = openapi::from_path("test/simple.openapi.yml")?;
   // println!("spec: {:#?}", spec);
   match openapi {
     openapi::OpenApi::V2(spec) => println!("{}", spec.to_asciidoc()),
