@@ -3,6 +3,7 @@
 use indoc::indoc;
 use std::collections::BTreeMap;
 use http::Method;
+use openapi::v3_0::ObjectOrReference;
 
 #[derive(Debug)]
 enum MyErr {
@@ -70,6 +71,41 @@ __required__|Pet to add to the store|<<_newpet,NewPet>>
 * `application/json`
 
 */
+
+fn build_schema(schema_name: String, schema: openapi::v3_0::Schema) -> String {
+  "".to_owned()
+}
+
+fn build_schemas(schemas: BTreeMap<String, ObjectOrReference<openapi::v3_0::Schema>>) -> String {
+  let mut schemas_adoc: Vec<String> = vec![
+    indoc!("
+      [[_schemas]]
+      === Schemas
+      [%hardbreaks]
+    ").to_owned()
+  ];
+
+  for (schema_name, schema) in &schemas {
+    schemas_adoc.push(build_schema(schema_name.to_owned(), schema.clone()));
+  }
+
+  schemas_adoc.join("\n")
+}
+
+fn build_components(components: openapi::v3_0::Components) -> String {
+  let mut components_adoc: Vec<String> = vec![
+    indoc!("
+      [[_components]]
+      == Components
+    ").to_owned()
+  ];
+
+  if let Some(schemas) = &components.schemas {
+    components_adoc.push(build_schemas(schemas))
+  }
+
+  components_adoc.join("\n")
+}
 
 fn build_path(path: String, method: Method, operation: &openapi::v3_0::Operation) -> String {
   // println!("{}: \"{:#?}\"", path, operation);
@@ -205,9 +241,14 @@ impl DisplayAsciidoc for openapi::v3_0::Spec {
       "), host = "", base_path = "", schemes = "")
     );
     
-    let paths = build_paths(self.paths.clone());
+    let paths_adoc = build_paths(self.paths.clone());
 
-    sections.push(paths);
+    sections.push(paths_adoc);
+
+    if let Some(&components) = self.components.as_ref() {
+      let components_adoc = build_components(components);
+      sections.push(components_adoc);
+    }
 
     sections.join("\n\n")
   }
